@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام مراقبة مطابقة اللحوم</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .form-container, .report-container {
+            padding: 20px;
+            background-color: #fff;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-container label {
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .btn-save {
+            margin-top: 20px;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-save:hover {
+            background-color: #0056b3;
+        }
+        .report-header {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <p>الجمهورية الجزائرية الديمقراطية الشعبية</p>
+        <p>وزارة التجارة الداخلية وضبط السوق الوطنية</p>
+        <h1>نظام مراقبة مطابقة اللحوم</h1>
+    </header>
+
+    <div class="form-container">
+        <h3>إدخال البيانات الخاصة باللحوم</h3>
+        <form id="meatForm">
+            <label for="merchantName">اسم التاجر:</label>
+            <input type="text" id="merchantName" name="merchantName" required>
+
+            <label for="merchantInfo">رقم السجل التجاري أو العنوان:</label>
+            <input type="text" id="merchantInfo" name="merchantInfo" required>
+
+            <label for="storageTemperature">درجة حرارة التخزين (°C):</label>
+            <input type="number" id="storageTemperature" name="storageTemperature" required>
+
+            <label for="expirationDate">تاريخ الصلاحية:</label>
+            <input type="date" id="expirationDate" name="expirationDate" required>
+
+            <label for="cleanliness">حالة النظافة:</label>
+            <input type="text" id="cleanliness" name="cleanliness" required>
+
+            <label for="department">مديرية التجارة:</label>
+            <input type="text" id="department" name="department" required>
+
+            <label for="inspection">مفتشية:</label>
+            <input type="text" id="inspection" name="inspection" required>
+
+            <label for="inspectors">الأعوان:</label>
+            <input type="text" id="inspectors" name="inspectors" required>
+
+            <button type="submit" class="btn-submit">إرسال البيانات</button>
+        </form>
+    </div>
+
+    <div id="reportSection" class="report-container">
+        <h3 class="report-header">تقرير الفحص</h3>
+        <div id="reportContent">
+            <p><strong>اسم التاجر:</strong> <span id="reportMerchantName"></span></p>
+            <p><strong>رقم السجل التجاري أو العنوان:</strong> <span id="reportMerchantInfo"></span></p>
+            <p><strong>مديرية التجارة:</strong> <span id="reportDepartment"></span></p>
+            <p><strong>المفتشية:</strong> <span id="reportInspection"></span></p>
+            <p><strong>الأعوان:</strong> <span id="reportInspectors"></span></p>
+            <p><strong>النتائج:</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>المعيار</th>
+                        <th>القيمة المدخلة</th>
+                        <th>القيمة المرجعية</th>
+                        <th>النتيجة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>درجة حرارة التخزين (°C)</td>
+                        <td id="tempResult"></td>
+                        <td>0 - 4</td>
+                        <td id="tempComparison"></td>
+                    </tr>
+                    <tr>
+                        <td>تاريخ الصلاحية</td>
+                        <td id="dateResult"></td>
+                        <td>تاريخ مستقبلي</td>
+                        <td id="dateComparison"></td>
+                    </tr>
+                    <tr>
+                        <td>حالة النظافة</td>
+                        <td id="cleanlinessResult"></td>
+                        <td>نظيف</td>
+                        <td id="cleanlinessComparison"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn-save" onclick="saveReport()">حفظ التقرير كصورة</button>
+    </div>
+
+    <script>
+        document.getElementById("meatForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const merchantName = document.getElementById("merchantName").value;
+            const merchantInfo = document.getElementById("merchantInfo").value;
+            const temp = document.getElementById("storageTemperature").value;
+            const date = document.getElementById("expirationDate").value;
+            const cleanliness = document.getElementById("cleanliness").value;
+            const department = document.getElementById("department").value;
+            const inspection = document.getElementById("inspection").value;
+            const inspectors = document.getElementById("inspectors").value;
+
+            // عرض البيانات في التقرير
+            document.getElementById("reportMerchantName").textContent = merchantName;
+            document.getElementById("reportMerchantInfo").textContent = merchantInfo;
+            document.getElementById("reportDepartment").textContent = department;
+            document.getElementById("reportInspection").textContent = inspection;
+            document.getElementById("reportInspectors").textContent = inspectors;
+
+            document.getElementById("tempResult").textContent = temp;
+            document.getElementById("dateResult").textContent = date;
+            document.getElementById("cleanlinessResult").textContent = cleanliness;
+
+            // مقارنة القيم
+            document.getElementById("tempComparison").textContent = temp >= 0 && temp <= 4 ? "مطابق" : "غير مطابق";
+            document.getElementById("dateComparison").textContent = new Date(date) > new Date() ? "مطابق" : "غير مطابق";
+            document.getElementById("cleanlinessComparison").textContent = cleanliness === "نظيف" ? "مطابق" : "غير مطابق";
+        });
+
+        function saveReport() {
+            const reportSection = document.getElementById("reportSection");
+
+            // استخدام مكتبة html2canvas لالتقاط صورة للشاشة
+            html2canvas(reportSection).then(canvas => {
+                const link = document.createElement("a");
+                link.download = `تقرير_الفحص_${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            }).catch(error => {
+                console.error("حدث خطأ أثناء حفظ التقرير كصورة:", error);
+            });
+        }
+    </script>
+</body>
+</html>
